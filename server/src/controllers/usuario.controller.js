@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const bcrypt = require('bcrypt');
 
 async function listarUsusarios(req, res) {
     try {
@@ -13,18 +14,18 @@ async function listarUsusarios(req, res) {
 
 async function criarUsuario(req, res) {
     try {
-        const { email, senha, nivel_acesso } = req.body;
+        const { nome, email, senha, nivel_acesso } = req.body;
 
-        if(!email || !senha || !nivel_acesso) {
+        if(!nome || !email || !senha || !nivel_acesso) {
             return res.status(400).json({
-                error: 'Email, senha e nível de acesso são obrigatórios'
+                error: 'Nome, email, senha e nível de acesso são obrigatórios'
             });
         }
 
         const senhaHash = await bcrypt.hash(senha, 10);
 
         await db.query(
-            'INSERT INTO usuario (email, senha, nivel_acesso) VALUES (?, ?, ?)', [email, senhaHash, nivel_acesso]
+            'INSERT INTO usuario (nome, email, senha, nivel_acesso) VALUES (?, ?, ?, ?)', [nome, email, senhaHash, nivel_acesso]
         );
 
         res.status(201).json({
