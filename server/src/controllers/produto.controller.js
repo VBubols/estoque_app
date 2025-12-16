@@ -3,7 +3,7 @@ const db = require('../db/connection');
 async function listarProdutos(req, res) {
     try {
         const [rows] = await db.query(
-            'SELECT * FROM produto WHERE ativo = true'
+            'SELECT * FROM produto'
         );
         res.json(rows);
     } catch (error) {
@@ -71,9 +71,28 @@ async function desativarProduto(req, res) {
     }
 };
 
+async function reativarProduto(req, res) {
+    const { id } = req.params;
+
+    try { 
+        const [result] = await db.query(
+            'UPDATE produto SET ativo = true WHERE id_produto = ?', [id]
+        );
+
+        if(result.affectedRows === 0){
+            return res.status(404).json({ error: 'Produto não encontrado' });
+        }
+
+        return res.json({ message: 'Produto reativado com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     listarProdutos,
     criarProduto,
     atualizarProduto,
-    desativarProduto
+    desativarProduto,
+    reativarProduto
 };

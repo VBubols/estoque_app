@@ -120,29 +120,29 @@ export default function Produtos() {
     }
 
     async function handleDesativarProduto(id: number) {
-        Alert.alert(
-            "Confirmar",
-            "Deseja realmente desativar este produto?",
-            [
-                { text: "Cancelar", style: "cancel" },
-                {
-                    text: "Desativar",
-                    style: "destructive",
-                    onPress: async () => {
-                        try {
-                            await api.put(`/produtos/${id}`);
-                            Alert.alert("Sucesso", "Produto desativado com sucesso!");
-                            carregarProdutos();
-                        } catch (error: any) {
-                            Alert.alert(
-                                "Erro",
-                                error.response?.data?.error || "Erro ao desativar produto"
-                            );
-                        }
-                    },
-                },
-            ]
-        );
+        try {
+            await api.delete(`/produtos/${id}`);
+            Alert.alert("Sucesso", "Produto desativado com sucesso!");
+            carregarProdutos();
+        } catch (error: any) {
+            Alert.alert(
+                "Erro",
+                error.response?.data?.error || "Erro ao desativar produto"
+            );
+        }
+    }
+
+    async function handleReativarProduto(id: number) {
+        try {
+            await api.patch(`/produtos/${id}/reativar`);
+            Alert.alert("Sucesso", "Produto reativado com sucesso!");
+            carregarProdutos();
+        } catch (error: any) {
+            Alert.alert(
+                "Erro",
+                error.response?.data?.error || "Erro ao reativar produto"
+            );
+        }
     }
 
     function abrirModalEdicao(produto: Produto) {
@@ -246,14 +246,30 @@ export default function Produtos() {
                             shadowOpacity: 0.1,
                             shadowRadius: 4,
                             elevation: 3,
+                            opacity: item.ativo ? 1 : 0.5, // 👈 OPACO SE INATIVO
                         }}
                     >
                         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                            <Text style={{ fontSize: 18, fontWeight: "bold", flex: 1 }}>
-                                {item.nome_produto}
-                            </Text>
+                            <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+                                <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                                    {item.nome_produto}
+                                </Text>
+                                {!item.ativo && ( // 👈 BADGE DE INATIVO
+                                    <View style={{ 
+                                        backgroundColor: "#dc3545", 
+                                        paddingHorizontal: 8, 
+                                        paddingVertical: 2, 
+                                        borderRadius: 4,
+                                        marginLeft: 8 
+                                    }}>
+                                        <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold" }}>
+                                            INATIVO
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
                             <Text style={{ fontSize: 18, fontWeight: "bold", color: "#004c6a" }}>
-                                R$ {item.preco.toFixed(2)}
+                                R$ {Number(item.preco).toFixed(2)}
                             </Text>
                         </View>
                         
@@ -263,13 +279,14 @@ export default function Produtos() {
                         <Text style={{ color: "#666", marginBottom: 12 }}>
                             Fornecedor: {getNomeFornecedor(item.id_fornecedor)}
                         </Text>
-
+                
                         <View style={{ flexDirection: "row", gap: 8 }}>
                             <TouchableOpacity
                                 onPress={() => abrirModalEdicao(item)}
+                                disabled={!item.ativo} 
                                 style={{
                                     flex: 1,
-                                    backgroundColor: "#0066cc",
+                                    backgroundColor: item.ativo ? "#0066cc" : "#ccc",
                                     padding: 10,
                                     borderRadius: 6,
                                     alignItems: "center",
@@ -279,19 +296,22 @@ export default function Produtos() {
                                     Editar
                                 </Text>
                             </TouchableOpacity>
-
+                
                             <TouchableOpacity
-                                onPress={() => handleDesativarProduto(item.id_produto)}
+                                onPress={() => item.ativo 
+                                    ? handleDesativarProduto(item.id_produto)
+                                    : handleReativarProduto(item.id_produto)
+                                }
                                 style={{
                                     flex: 1,
-                                    backgroundColor: "#dc3545",
+                                    backgroundColor: item.ativo ? "#dc3545" : "#28a745",
                                     padding: 10,
                                     borderRadius: 6,
                                     alignItems: "center",
                                 }}
                             >
                                 <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                                    Desativar
+                                    {item.ativo ? "Desativar" : "Reativar"}
                                 </Text>
                             </TouchableOpacity>
                         </View>
