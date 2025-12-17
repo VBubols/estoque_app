@@ -5,7 +5,6 @@ CREATE TABLE usuario(
     email VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     nivel_acesso ENUM('admin', 'vendedor') NOT NULL DEFAULT 'vendedor',
-    ativo TINYINT(1) NOT NULL DEFAULT 1,
     data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
